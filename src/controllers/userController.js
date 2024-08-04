@@ -1,5 +1,5 @@
-const User = require("../models/userModel");
 const { findUsers } = require("../services/userService");
+const { successResponse } = require("./responseController");
 
 const handleGetUsers = async (req, res, next) => {
     try {
@@ -9,12 +9,14 @@ const handleGetUsers = async (req, res, next) => {
 
         const { users, pagination } = await findUsers(search, page, limit);
 
-        res.json({
+        return successResponse(res, {
+            statusCode: 200,
             message: 'Users ware returned successfully',
-            users: users,
-            pagination: pagination,
-        })
-
+            payload: {
+                users,
+                pagination,
+            },
+        });
     } catch (error) {
         next(error);
     }
