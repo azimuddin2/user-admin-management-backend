@@ -28,6 +28,20 @@ const data = {
             phone: "04055588",
             address: "USA",
         },
+        {
+            name: "Mohammad Ahsan",
+            email: "mohammadahsan220@gmail.com",
+            password: "ahsan1234",
+            phone: "01883061967",
+            address: "Dubai",
+        },
+        {
+            name: "Moontasir",
+            email: "moontasir301@gmail.com",
+            password: "moontasir1234",
+            phone: "01883061967",
+            address: "Bangladesh",
+        },
     ],
 };
 
