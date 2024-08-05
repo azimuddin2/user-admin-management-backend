@@ -1,4 +1,4 @@
-const { findUsers } = require("../services/userService");
+const { findUsers, findUserById } = require("../services/userService");
 const { successResponse } = require("./responseController");
 
 const handleGetUsers = async (req, res, next) => {
@@ -22,6 +22,22 @@ const handleGetUsers = async (req, res, next) => {
     }
 };
 
+const handleGetUserById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const user = await findUserById(id);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User ware returned successfully',
+            payload: { user },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
-    handleGetUsers
+    handleGetUsers,
+    handleGetUserById,
 };
