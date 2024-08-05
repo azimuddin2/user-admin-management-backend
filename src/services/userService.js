@@ -1,6 +1,7 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
+const { deleteImage } = require("../helper/deleteImage");
 
 const findUsers = async (search, page, limit) => {
     try {
@@ -64,7 +65,37 @@ const findUserById = async (id) => {
     }
 };
 
+const deleteUserById = async (id) => {
+    try {
+        const options = { password: 0 };
+        const user = await findUserById(id, options);
+
+        const result = await User.findByIdAndDelete({
+            _id: id,
+            isAdmin: false,
+        });
+
+        if (user && user.image) {
+            await deleteImage(user.image)
+        }
+
+        if (!result) {
+            throw createError(
+                401,
+                'User with this ID was not deleted successfully',
+            );
+        }
+
+    } catch (error) {
+        if (error instanceof mongoose.Error.CastError) {
+            throw createError(400, 'Invalid User ID');
+        }
+        throw error;
+    }
+};
+
 module.exports = {
     findUsers,
     findUserById,
+    deleteUserById,
 };

@@ -1,4 +1,8 @@
-const { findUsers, findUserById } = require("../services/userService");
+const {
+    findUsers,
+    findUserById,
+    deleteUserById
+} = require("../services/userService");
 const { successResponse } = require("./responseController");
 
 const handleGetUsers = async (req, res, next) => {
@@ -37,7 +41,22 @@ const handleGetUserById = async (req, res, next) => {
     }
 };
 
+const handleDeleteUserById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        await deleteUserById(id);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User was deleted successfully',
+        })
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleGetUsers,
     handleGetUserById,
+    handleDeleteUserById,
 };
