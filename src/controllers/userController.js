@@ -8,12 +8,12 @@ const { successResponse } = require("./responseController");
 
 const handleProcessRegister = async (req, res, next) => {
     try {
-        const newUser = await processRegister(req);
+        const {payload, token} = await processRegister(req);
 
         return successResponse(res, {
             statusCode: 200,
             message: 'User was created successfully',
-            payload: { newUser },
+            payload: { token },
         });
     } catch (error) {
         next(error);

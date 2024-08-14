@@ -2,6 +2,8 @@ const createError = require("http-errors");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const { deleteImage } = require("../helper/deleteImage");
+const { createJsonWebToken } = require("../helper/jsonWebToken");
+const { jwtActivationKey } = require("../secret");
 
 const processRegister = async (req) => {
     try {
@@ -10,14 +12,14 @@ const processRegister = async (req) => {
         const image = req.file?.path;
 
         const userExists = await User.exists({ email: email });
-        if(userExists){
+        if (userExists) {
             throw createError(
                 409,
                 'User with this email already exists. Please sign in',
             );
         }
 
-        const newUser = {
+        const payload = {
             name,
             email,
             password,
@@ -25,7 +27,13 @@ const processRegister = async (req) => {
             address,
         };
 
-        return newUser;
+        const token = createJsonWebToken(
+            payload,
+            jwtActivationKey,
+            '10m'
+        );
+
+        return { payload, token };
 
     } catch (error) {
         throw error;
