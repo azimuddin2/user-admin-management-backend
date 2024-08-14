@@ -1,9 +1,24 @@
 const {
+    processRegister,
     findUsers,
     findUserById,
     deleteUserById
 } = require("../services/userService");
 const { successResponse } = require("./responseController");
+
+const handleProcessRegister = async (req, res, next) => {
+    try {
+        const newUser = await processRegister(req);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User was created successfully',
+            payload: { newUser },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 const handleGetUsers = async (req, res, next) => {
     try {
@@ -56,6 +71,7 @@ const handleDeleteUserById = async (req, res, next) => {
 };
 
 module.exports = {
+    handleProcessRegister,
     handleGetUsers,
     handleGetUserById,
     handleDeleteUserById,

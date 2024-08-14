@@ -3,6 +3,35 @@ const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const { deleteImage } = require("../helper/deleteImage");
 
+const processRegister = async (req) => {
+    try {
+        const { name, email, password, phone, address } = req.body;
+
+        const image = req.file?.path;
+
+        const userExists = await User.exists({ email: email });
+        if(userExists){
+            throw createError(
+                409,
+                'User with this email already exists. Please sign in',
+            );
+        }
+
+        const newUser = {
+            name,
+            email,
+            password,
+            phone,
+            address,
+        };
+
+        return newUser;
+
+    } catch (error) {
+        throw error;
+    }
+};
+
 const findUsers = async (search, page, limit) => {
     try {
         const searchRegExp = new RegExp(".*" + search + ".*", "i");
@@ -95,6 +124,7 @@ const deleteUserById = async (id) => {
 };
 
 module.exports = {
+    processRegister,
     findUsers,
     findUserById,
     deleteUserById,
