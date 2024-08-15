@@ -1,5 +1,6 @@
 const {
     processRegister,
+    activateAccount,
     findUsers,
     findUserById,
     deleteUserById
@@ -14,6 +15,20 @@ const handleProcessRegister = async (req, res, next) => {
             statusCode: 200,
             message: `Please go to your ${payload.email} for completing your registration process`,
             payload: { token },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const handleActivateAccount = async (req, res, next) => {
+    try {
+        const newUser = await activateAccount(req);
+
+        return successResponse(res, {
+            statusCode: 201,
+            message: 'User was registered successfully',
+            payload: { newUser },
         });
     } catch (error) {
         next(error);
@@ -72,6 +87,7 @@ const handleDeleteUserById = async (req, res, next) => {
 
 module.exports = {
     handleProcessRegister,
+    handleActivateAccount,
     handleGetUsers,
     handleGetUserById,
     handleDeleteUserById,

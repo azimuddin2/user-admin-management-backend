@@ -1,6 +1,7 @@
 const createError = require("http-errors");
-const User = require("../models/userModel");
+const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
+const User = require("../models/userModel");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJsonWebToken } = require("../helper/jsonWebToken");
 const { jwtActivationKey, clientURL } = require("../secret");
@@ -43,12 +44,52 @@ const processRegister = async (req) => {
                 <p>Please click here to <a href="${clientURL}/api/users/activate/${token}" target="_blank"> active your account </a> </p>
             `,
         };
-
         sendEmail(emailData);
 
         return { payload, token };
     } catch (error) {
         throw error;
+    }
+};
+
+const activateAccount = async (req) => {
+    try {
+        const token = req.body.token;
+        if (!token) {
+            throw createError(
+                404,
+                'token not found',
+            );
+        }
+
+        const decoded = jwt.verify(token, jwtActivationKey);
+        if (!decoded) {
+            throw createError(
+                401,
+                'Unable to verify user',
+            );
+        }
+
+        const userExists = await User.exists({ email: decoded.email });
+        if (userExists) {
+            throw createError(
+                409,
+                'User with this email already exists. Please sign in',
+            );
+        }
+
+        const newUser = await User.create(decoded);
+
+        return newUser;
+
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            throw createError(401, 'Token has expired');
+        } else if (error.name === 'JsonWebTokenError') {
+            throw createError(401, 'Invalid token');
+        } else {
+            throw error;
+        }
     }
 };
 
@@ -145,6 +186,7 @@ const deleteUserById = async (id) => {
 
 module.exports = {
     processRegister,
+    activateAccount,
     findUsers,
     findUserById,
     deleteUserById,
