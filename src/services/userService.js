@@ -3,7 +3,8 @@ const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJsonWebToken } = require("../helper/jsonWebToken");
-const { jwtActivationKey } = require("../secret");
+const { jwtActivationKey, clientURL } = require("../secret");
+const sendEmail = require("../helper/sendEmail");
 
 const processRegister = async (req) => {
     try {
@@ -33,8 +34,19 @@ const processRegister = async (req) => {
             '10m'
         );
 
-        return { payload, token };
+        // prepare email
+        const emailData = {
+            email,
+            subject: 'Account Activation Email',
+            html: `
+                <h2> Hello ${name}! </h2>
+                <p>Please click here to <a href="${clientURL}/api/users/activate/${token}" target="_blank"> active your account </a> </p>
+            `,
+        };
 
+        sendEmail(emailData);
+
+        return { payload, token };
     } catch (error) {
         throw error;
     }
