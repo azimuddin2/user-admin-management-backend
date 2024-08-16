@@ -6,9 +6,10 @@ const {
     handleGetUserById,
     handleDeleteUserById
 } = require('../controllers/userController');
+const { uploadUserImage } = require('../middlewares/uploadFile');
 const userRouter = express.Router();
 
-userRouter.post('/process-register', handleProcessRegister);
+userRouter.post('/process-register', uploadUserImage.single("image"), handleProcessRegister);
 userRouter.post('/activate', handleActivateAccount);
 userRouter.get('/', handleGetUsers);
 userRouter.get('/:id', handleGetUserById);
