@@ -4,7 +4,8 @@ const {
     handleActivateAccount,
     handleGetUsers,
     handleGetUserById,
-    handleDeleteUserById
+    handleDeleteUserById,
+    handleUpdateUserById
 } = require('../controllers/userController');
 const { uploadUserImage } = require('../middlewares/uploadFile');
 const { validateUserRegistration } = require('../validators/auth');
@@ -22,5 +23,10 @@ userRouter.post('/activate', handleActivateAccount);
 userRouter.get('/', handleGetUsers);
 userRouter.get('/:id', handleGetUserById);
 userRouter.delete('/:id', handleDeleteUserById);
+userRouter.put(
+    '/:id',
+    uploadUserImage.single("image"),
+    handleUpdateUserById
+);
 
 module.exports = userRouter;

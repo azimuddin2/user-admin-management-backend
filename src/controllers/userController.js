@@ -3,7 +3,8 @@ const {
     activateAccount,
     findUsers,
     findUserById,
-    deleteUserById
+    deleteUserById,
+    updateUserById
 } = require("../services/userService");
 const { successResponse } = require("./responseController");
 
@@ -85,10 +86,26 @@ const handleDeleteUserById = async (req, res, next) => {
     }
 };
 
+const handleUpdateUserById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const updatedUser = await updateUserById(id, req);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User was updated successfully',
+            payload: { updatedUser },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleProcessRegister,
     handleActivateAccount,
     handleGetUsers,
     handleGetUserById,
     handleDeleteUserById,
+    handleUpdateUserById,
 };

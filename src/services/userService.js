@@ -6,6 +6,7 @@ const { deleteImage } = require("../helper/deleteImage");
 const { createJsonWebToken } = require("../helper/jsonWebToken");
 const { jwtActivationKey, clientURL } = require("../secret");
 const sendEmail = require("../helper/sendEmail");
+const { MAX_FILE_SIZE } = require("../config");
 
 const processRegister = async (req) => {
     try {
@@ -185,10 +186,64 @@ const deleteUserById = async (id) => {
     }
 };
 
+const updateUserById = async (id, req) => {
+    try {
+        const user = await findUserById(id);
+
+        const options = { new: true, runValidators: true, context: 'query' };
+        let updates = {};
+
+        const allowedFields = ['name', 'password', 'address', 'phone'];
+
+        for (let key in req.body) {
+            if (allowedFields.includes(key)) {
+                updates[key] = req.body[key];
+            }
+            else if (key === 'email') {
+                throw createError(400, 'Email can not be updated');
+            }
+        }
+
+        const image = req.file?.path;
+        if (image) {
+            if (image.size > MAX_FILE_SIZE) {
+                throw createError(
+                    400,
+                    'File to large. It must be less than 2 MB',
+                );
+            }
+            updates.image = image;
+            user.image !== 'user.png' && deleteImage(user.image);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            updates,
+            options
+        ).select('-password');
+
+        if (!updatedUser) {
+            throw createError(
+                404,
+                'User With this ID does not exist'
+            );
+        }
+
+        return updatedUser;
+
+    } catch (error) {
+        if (error instanceof mongoose.Error.CastError) {
+            throw createError(400, 'Invalid Id');
+        }
+        throw error;
+    }
+};
+
 module.exports = {
     processRegister,
     activateAccount,
     findUsers,
     findUserById,
     deleteUserById,
+    updateUserById,
 };
