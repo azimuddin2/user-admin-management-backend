@@ -13,7 +13,12 @@ const processRegister = async (req) => {
         const { name, email, password, phone, address } = req.body;
 
         const image = req.file?.path;
-        console.log(image);
+        if (image && image.size > MAX_FILE_SIZE) {
+            throw createError(
+                400,
+                'File to large. It must be less than 2 MB'
+            );
+        }
 
         const userExists = await User.exists({ email: email });
         if (userExists) {
@@ -31,10 +36,14 @@ const processRegister = async (req) => {
             address,
         };
 
+        if (image) {
+            payload.image = image;
+        }
+
         const token = createJsonWebToken(
             payload,
             jwtActivationKey,
-            '10m'
+            '1h'
         );
 
         // prepare email
@@ -46,7 +55,7 @@ const processRegister = async (req) => {
                 <p>Please click here to <a href="${clientURL}/api/users/activate/${token}" target="_blank"> active your account </a> </p>
             `,
         };
-        // sendEmail(emailData);
+        sendEmail(emailData);
 
         return { payload, token };
     } catch (error) {
