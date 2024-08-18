@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const createError = require('http-errors');
@@ -16,6 +17,7 @@ const rateLimiter = rateLimit({
     message: 'Too many requests from this IP. Please try again later',
 });
 
+app.use(cookieParser());
 app.use(rateLimiter);
 app.use(morgan("dev"));
 app.use(helmet());
