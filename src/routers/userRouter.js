@@ -5,7 +5,8 @@ const {
     handleGetUsers,
     handleGetUserById,
     handleDeleteUserById,
-    handleUpdateUserById
+    handleUpdateUserById,
+    handleManageUserStatusById
 } = require('../controllers/userController');
 const { uploadUserImage } = require('../middlewares/uploadFile');
 const { validateUserRegistration } = require('../validators/auth');
@@ -15,10 +16,10 @@ const userRouter = express.Router();
 
 userRouter.post(
     '/process-register',
-    isLoggedOut,
     uploadUserImage.single("image"),
     validateUserRegistration,
     runValidation,
+    isLoggedOut,
     handleProcessRegister
 );
 userRouter.post(
@@ -48,6 +49,12 @@ userRouter.put(
     isLoggedIn,
     uploadUserImage.single("image"),
     handleUpdateUserById
+);
+userRouter.put(
+    '/manage-user/:id([0-9a-fA-F]{24})',
+    isLoggedIn,
+    isAdmin,
+    handleManageUserStatusById,
 );
 
 module.exports = userRouter;
