@@ -5,7 +5,8 @@ const {
     findUserById,
     deleteUserById,
     updateUserById,
-    manageUserStatusById
+    manageUserStatusById,
+    updateUserPassword
 } = require("../services/userService");
 const { successResponse } = require("./responseController");
 
@@ -119,6 +120,21 @@ const handleManageUserStatusById = async (req, res, next) => {
     }
 };
 
+const handleUpdatePassword = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const updatedUser = await updateUserPassword(id, req);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User was password updated successfully',
+            payload: updatedUser,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleProcessRegister,
     handleActivateAccount,
@@ -127,4 +143,5 @@ module.exports = {
     handleDeleteUserById,
     handleUpdateUserById,
     handleManageUserStatusById,
+    handleUpdatePassword,
 };

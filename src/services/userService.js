@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const mongoose = require("mongoose");
 const User = require("../models/userModel");
 const { deleteImage } = require("../helper/deleteImage");
@@ -293,6 +294,64 @@ const manageUserStatusById = async (id, action) => {
     }
 };
 
+const updateUserPassword = async (id, req) => {
+    try {
+        const { email, oldPassword, newPassword, confirmedPassword } = req.body;
+        const query = { email: email };
+
+        const user = await User.findOne(query);
+        if (!user) {
+            throw createError(
+                404,
+                'User is not found with this email'
+            );
+        }
+
+        const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordMatch) {
+            throw createError(
+                401,
+                'Old password is not correct'
+            );
+        }
+
+        if (newPassword !== confirmedPassword) {
+            throw createError(
+                400,
+                'New password and confirmed password did not match'
+            );
+        }
+
+        const update = {
+            $set: {
+                password: newPassword,
+            },
+        };
+
+        const options = { new: true };
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            update,
+            options
+        ).select('-password');
+
+        if (!updatedUser) {
+            throw createError(
+                401,
+                'User was not updated successfully'
+            )
+        }
+
+        return updatedUser;
+    } catch (error) {
+        if (error instanceof mongoose.Error.CastError) {
+            throw createError(400, 'Invalid Id');
+        }
+        throw error;
+    }
+};
+
 module.exports = {
     processRegister,
     activateAccount,
@@ -301,4 +360,5 @@ module.exports = {
     deleteUserById,
     updateUserById,
     manageUserStatusById,
+    updateUserPassword,
 };
