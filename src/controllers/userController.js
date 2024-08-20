@@ -6,7 +6,8 @@ const {
     deleteUserById,
     updateUserById,
     manageUserStatusById,
-    updateUserPassword
+    updateUserPassword,
+    forgetPassword
 } = require("../services/userService");
 const { successResponse } = require("./responseController");
 
@@ -135,6 +136,21 @@ const handleUpdatePassword = async (req, res, next) => {
     }
 };
 
+const handleForgetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const token = await forgetPassword(email);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: `Please go to your ${email} for reset the password`,
+            payload: token,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleProcessRegister,
     handleActivateAccount,
@@ -144,4 +160,5 @@ module.exports = {
     handleUpdateUserById,
     handleManageUserStatusById,
     handleUpdatePassword,
+    handleForgetPassword,
 };

@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const User = require("../models/userModel");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJsonWebToken } = require("../helper/jsonWebToken");
-const { jwtActivationKey, clientURL } = require("../secret");
+const { jwtActivationKey, clientURL, jwtResetPasswordKey } = require("../secret");
 const sendEmail = require("../helper/sendEmail");
 const { MAX_FILE_SIZE } = require("../config");
 
@@ -352,6 +352,39 @@ const updateUserPassword = async (id, req) => {
     }
 };
 
+const forgetPassword = async (email) => {
+    try {
+        const filter = { email: email };
+        const user = await User.findOne(filter);
+        if (!user) {
+            throw createError(
+                404,
+                'Email is incorrect or you have not verified your email address. Please register yourself first'
+            );
+        }
+
+        const token = createJsonWebToken(
+            { email },
+            jwtResetPasswordKey,
+            '1h'
+        );
+
+        const emailData = {
+            email,
+            subject: 'Reset Password Email',
+            html: `
+                <h2> Hello ${user.name}! </h2>
+                <p>Please click here to <a href="${clientURL}/api/users/reset-password/${token}" target="_blank"> Reset your password </a> </p>
+            `,
+        };
+        sendEmail(emailData);
+
+        return token;
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
     processRegister,
     activateAccount,
@@ -361,4 +394,5 @@ module.exports = {
     updateUserById,
     manageUserStatusById,
     updateUserPassword,
+    forgetPassword,
 };
