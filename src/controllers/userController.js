@@ -7,7 +7,8 @@ const {
     updateUserById,
     manageUserStatusById,
     updateUserPassword,
-    forgetPassword
+    forgetPassword,
+    resetPassword
 } = require("../services/userService");
 const { successResponse } = require("./responseController");
 
@@ -151,6 +152,20 @@ const handleForgetPassword = async (req, res, next) => {
     }
 };
 
+const handleResetPassword = async (req, res, next) => {
+    try {
+        const { token, password } = req.body;
+        await resetPassword(token, password);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Password reset successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleProcessRegister,
     handleActivateAccount,
@@ -161,4 +176,5 @@ module.exports = {
     handleManageUserStatusById,
     handleUpdatePassword,
     handleForgetPassword,
+    handleResetPassword,
 };

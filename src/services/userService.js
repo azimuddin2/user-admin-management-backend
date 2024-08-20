@@ -385,6 +385,43 @@ const forgetPassword = async (email) => {
     }
 };
 
+const resetPassword = async (token, password) => {
+    try {
+        const decoded = jwt.verify(token, jwtResetPasswordKey);
+        if (!decoded) {
+            throw createError(
+                400,
+                'Invalid or expired token'
+            );
+        }
+
+        const filter = { email: decoded.email };
+        const update = {
+            $set: {
+                password: password,
+            },
+        };
+
+        const options = { new: true };
+
+        const updatedPassword = await User.findOneAndUpdate(
+            filter,
+            update,
+            options,
+        ).select('-password');
+
+        if (!updatedPassword) {
+            throw createError(
+                400,
+                'Password reset failed',
+            );
+        }
+
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
     processRegister,
     activateAccount,
@@ -395,4 +432,5 @@ module.exports = {
     manageUserStatusById,
     updateUserPassword,
     forgetPassword,
+    resetPassword,
 };

@@ -8,12 +8,19 @@ const {
     handleUpdateUserById,
     handleManageUserStatusById,
     handleUpdatePassword,
-    handleForgetPassword
+    handleForgetPassword,
+    handleResetPassword
 } = require('../controllers/userController');
 const { uploadUserImage } = require('../middlewares/uploadFile');
-const { validateUserRegistration, validateUserPasswordUpdate, validateUserForgetPassword } = require('../validators/auth');
+const {
+    validateUserRegistration,
+    validateUserPasswordUpdate,
+    validateUserForgetPassword,
+    validateUserResetPassword
+} = require('../validators/auth');
 const runValidation = require('../validators');
 const { isLoggedOut, isLoggedIn, isAdmin } = require('../middlewares/auth');
+
 const userRouter = express.Router();
 
 userRouter.post(
@@ -70,6 +77,12 @@ userRouter.post(
     validateUserForgetPassword,
     runValidation,
     handleForgetPassword
+);
+userRouter.put(
+    '/reset-password',
+    validateUserResetPassword,
+    runValidation,
+    handleResetPassword
 );
 
 module.exports = userRouter;
