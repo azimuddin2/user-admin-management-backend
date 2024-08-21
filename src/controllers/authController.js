@@ -1,9 +1,11 @@
 const createError = require("http-errors");
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require("../models/userModel");
 const { createJsonWebToken } = require("../helper/jsonWebToken");
-const { jwtAccessKey } = require("../secret");
+const { jwtAccessKey, jwtRefreshKey } = require("../secret");
 const { successResponse } = require("./responseController");
+const { setAccessTokenCookie, setRefreshTokenCookie } = require("../helper/cookie");
 
 const handleLogin = async (req, res, next) => {
     try {
@@ -38,13 +40,14 @@ const handleLogin = async (req, res, next) => {
             jwtAccessKey,
             '30m'
         );
+        setAccessTokenCookie(res, accessToken);
 
-        res.cookie('accessToken', accessToken, {
-            maxAge: 30 * 60 * 1000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-        });
+        const refreshToken = createJsonWebToken(
+            { user },
+            jwtRefreshKey,
+            '7d'
+        );
+        setRefreshTokenCookie(res, refreshToken);
 
         return successResponse(res, {
             statusCode: 200,
@@ -58,6 +61,7 @@ const handleLogin = async (req, res, next) => {
 const handleLogout = (req, res, next) => {
     try {
         res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
 
         return successResponse(res, {
             statusCode: 200,
@@ -68,7 +72,36 @@ const handleLogout = (req, res, next) => {
     }
 };
 
+const handleRefreshToken = async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+
+        const decodedToken = jwt.verify(refreshToken, jwtRefreshKey);
+        if (!decodedToken) {
+            createError(
+                401,
+                'Invalid refresh token. Please login again'
+            );
+        }
+
+        const accessToken = createJsonWebToken(
+            decodedToken.user,
+            jwtAccessKey,
+            '30m'
+        );
+        setAccessTokenCookie(res, accessToken);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'New access token is generated',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     handleLogin,
     handleLogout,
+    handleRefreshToken,
 };
